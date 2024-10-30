@@ -8,7 +8,7 @@ from streamlit_drawable_canvas import st_canvas
 def predictDigit(image):
     model = tf.keras.models.load_model("model/handwritten.h5")
     image = ImageOps.grayscale(image)
-    img = image.resize((28,28))
+    img = image.resize((28, 28))
     img = np.array(img, dtype='float32')
     img = img / 255.0
     img = img.reshape((1, 28, 28, 1))
@@ -23,17 +23,17 @@ st.set_page_config(page_title='🎨 Reconocimiento de Dígitos Escrito a Mano �
 st.title("🖌️ Reconocimiento de Dígitos con IA 🎉")
 st.markdown("#### Dibuja un dígito en el panel y haz clic en **Predecir** para ver el resultado! 🚀")
 
-
 with st.sidebar:
     st.title("ℹ️ Acerca de esta Aplicación")
     st.markdown("""
     🎨 Esta aplicación evalúa la habilidad de una Red Neuronal Artificial para reconocer dígitos escritos a mano. 
     💡 Basada en el trabajo de Vinay Uniyal.
     """)
-
+    st.write("### 🎨 Opciones de Dibujo")
+    stroke_width = st.slider("🖍️ Selecciona el Ancho de Línea:", 1, 50, 20)
+    clear_button = st.button("🗑️ Limpiar Lienzo")
 
 st.write("### 🎈 Zona de Dibujo Interactiva")
-stroke_width = st.slider("🖍️ Selecciona el Ancho de Línea:", 1, 50, 20)
 drawing_mode = "freedraw"
 stroke_color = "#FFFFFF"  
 bg_color = "#000000"
@@ -49,10 +49,12 @@ canvas_result = st_canvas(
     key="canvas",
 )
 
+# Limpiar el lienzo si se presiona el botón
+if clear_button:
+    st.experimental_rerun()  # Reinicia la app para limpiar el lienzo
 
 if st.button("🔍 Predecir"):
     if canvas_result.image_data is not None:
-       
         input_numpy_array = np.array(canvas_result.image_data)
         input_image = Image.fromarray(input_numpy_array.astype("uint8"), "RGBA")
         input_image = input_image.convert("L") 
@@ -61,6 +63,15 @@ if st.button("🔍 Predecir"):
     else:
         st.warning("⚠️ Por favor, dibuja un dígito en el lienzo antes de predecir.")
 
+# Añadir un botón para descargar la imagen dibujada
+if st.button("💾 Descargar Dibujo"):
+    if canvas_result.image_data is not None:
+        input_numpy_array = np.array(canvas_result.image_data)
+        input_image = Image.fromarray(input_numpy_array.astype("uint8"), "RGBA")
+        input_image.save("dibujo.png")  # Cambia el nombre del archivo según sea necesario
+        st.success("🖼️ ¡Tu dibujo se ha guardado como 'dibujo.png'!")
+    else:
+        st.warning("⚠️ No hay dibujo para descargar.")
 
 st.markdown("""
     <style>
@@ -84,4 +95,3 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
-
